@@ -1,0 +1,69 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+library(tidyverse)
+```
+
+## Bus Trip Observations
+
+This dynamic report summarises observational logging data collected from bus trips.
+
+```{r import-data}
+logged_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_2ZHK55mzQyTotFrfOHVDtVrNOUGny5iW8jE4-9b-pf9pXVBUljsz9vySqCvbD02RGtB-EpMm-Imk/pub?output=csv")
+
+latest_data <- logged_data |>
+  rename(
+    time_of_day = `What time of day was this bus trip?`,
+    passengers = `Approximately how many passengers were on the bus when you observed it?`,
+    seat_available = `Was there an empty seat available when you got on the bus?`,
+    trip_minutes = `About how many minutes did this bus trip take?`,
+    crowding = `How crowded did the bus feel overall?`
+  ) |>
+  mutate(
+    passengers = as.numeric(passengers),
+    trip_minutes = as.numeric(trip_minutes)
+  )
+```
+
+```{r summary-values}
+num_trips <- nrow(latest_data)
+avg_passengers <- mean(latest_data$passengers, na.rm=TRUE)
+avg_minutes <- mean(latest_data$trip_minutes, na.rm=TRUE)
+max_passengers <- max(latest_data$passengers, na.rm=TRUE)
+```
+
+A total of `r num_trips` bus trips have been recorded so far.
+
+The average number of passengers observed per trip is `r round(avg_passengers, 1)`.
+
+The average trip duration is `r round(avg_minutes, 1)` minutes.
+
+The highest number of passengers observed on a single trip was `r max_passengers`.
+
+## Bar chart 1
+
+```{r bar-chart-1}
+ggplot(latest_data, aes(x=time_of_day)) +
+  geom_bar() +
+  labs(
+    title = "Number of Bus Trip Observations by Time of Day",
+    x = "Time of day",
+    y = "Count"
+  )
+```
+
+## Bar chart 2
+
+```{r bar-chart-2}
+ggplot(latest_data, aes(x=crowding)) +
+  geom_bar() +
+  labs(
+    title = "Crowding Level of Observed Bus Trips",
+    x = "Crowding level",
+    y = "Count"
+  )
+```
